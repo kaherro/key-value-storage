@@ -18,7 +18,7 @@ private:
     size_t capacity = 0; 
     const size_t MOD = 1e9 + 7; 
 
-    size_t hash(const KEY &key) const {
+    size_t hash(const KEY &key, size_t capacity) const {
         std::string s; 
         if constexpr (std::is_same_v<KEY, std::string>) {
             s = key; 
@@ -38,12 +38,24 @@ public:
     }
 
     void rehash() {
-        
+        size_t capacity_new = capacity * 2; 
+        std::vector<cell> cells_new(capacity_new);
+        for(auto &c : cells) {
+            if(c.used && !c.deleted) {
+                size_t i = hash(c.key, capacity_new); 
+                while(cells_new[i].used) {
+                    i = (i + 1) % capacity_new; 
+                }
+                cells_new[i] = {c.key, c.value, true, false}; 
+            }
+        }
+        cells = std::move(cells_new);
+        capacity = capacity_new;
     }
 
     void set(const KEY &key, const VAL &value) {
         if (size * 4 >= capacity * 3) rehash(); 
-        auto i = hash(key); 
+        auto i = hash(key, capacity); 
         while(cells[i].used && !cells[i].deleted && cells[i].key != key) {
             i = (i + 1) % capacity; 
         }
@@ -52,7 +64,7 @@ public:
     }
 
     std::optional<VAL> get(const KEY &key) const {
-        auto i = hash(key); 
+        auto i = hash(key, capacity); 
         int ops = 0; 
         while(ops < capacity) {
             if (!cells[i].used && !cells[i].deleted) {
@@ -68,7 +80,7 @@ public:
     };
 
     bool del(const KEY &key) {
-        auto i = hash(key); 
+        auto i = hash(key, capacity); 
         int ops = 0; 
         while(ops < capacity) {
             if (!cells[i].used && !cells[i].deleted) {
