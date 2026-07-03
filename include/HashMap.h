@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <chrono>
 
 template<typename KEY, typename VAL>
 class HashMap {
@@ -11,6 +12,7 @@ private:
         VAL value; 
         bool used = false; 
         bool deleted = false; 
+        std::optional<std::chrono::steady_clock::time_point> expires_at; 
     };
     
     std::vector<cell> cells; 
@@ -46,24 +48,28 @@ public:
                 while(cells_new[i].used) {
                     i = (i + 1) % capacity_new; 
                 }
-                cells_new[i] = {c.key, c.value, true, false}; 
+                cells_new[i] = {c.key, c.value, true, false, c.expires_at}; 
             }
         }
         cells = std::move(cells_new);
         capacity = capacity_new;
     }
 
-    void set(const KEY &key, const VAL &value) {
+    void set(const KEY &key, const VAL &value, const int seconds_to_expire = 0) {
         if (size * 4 >= capacity * 3) rehash(); 
         auto i = hash(key, capacity); 
         while(cells[i].used && !cells[i].deleted && cells[i].key != key) {
             i = (i + 1) % capacity; 
         }
         if (!cells[i].used) size++; 
-        cells[i] = {key, value, true, false};
+        std::optional<std::chrono::steady_clock::time_point> expires_at;
+        if(seconds_to_expire > 0) {
+            expires_at = std::chrono::steady_clock::now() + std::chrono::seconds(seconds_to_expire);
+        }
+        cells[i] = {key, value, true, false, expires_at};
     }
 
-    std::optional<VAL> get(const KEY &key) const {
+    std::optional<VAL> get(const KEY &key) {
         auto i = hash(key, capacity); 
         int ops = 0; 
         while(ops < capacity) {
@@ -71,6 +77,11 @@ public:
                 return std::nullopt;
             }
             if(cells[i].key == key && !cells[i].deleted) {
+                if(cells[i].expires_at && *cells[i].expires_at < std::chrono::steady_clock::now()) {
+                    cells[i].deleted = true; 
+                    size--; 
+                    return std::nullopt; 
+                }
                 return cells[i].value; 
             }
             i = (i + 1) % capacity; 
