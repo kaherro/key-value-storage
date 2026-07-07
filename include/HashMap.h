@@ -70,24 +70,9 @@ public:
     }
 
     std::optional<VAL> get(const KEY &key) {
-        auto i = hash(key, capacity); 
-        int ops = 0; 
-        while(ops < capacity) {
-            if (!cells[i].used && !cells[i].deleted) {
-                return std::nullopt;
-            }
-            if(cells[i].key == key && !cells[i].deleted) {
-                if(cells[i].expires_at && *cells[i].expires_at < std::chrono::steady_clock::now()) {
-                    cells[i].deleted = true; 
-                    size--; 
-                    return std::nullopt; 
-                }
-                return cells[i].value; 
-            }
-            i = (i + 1) % capacity; 
-            ops++; 
-        }
-        return std::nullopt; 
+        VAL* val = find(key);
+        if (!val) return std::nullopt;
+        return *val; 
     };
 
     bool del(const KEY &key) {
@@ -107,4 +92,24 @@ public:
         }
         return false; 
     };
+
+    VAL* find(const KEY& key) {
+        size_t i = hash(key, capacity);
+        size_t ops = 0;
+        while (ops < capacity) {
+            if (!cells[i].used && !cells[i].deleted)
+                return nullptr;
+            if (cells[i].key == key && !cells[i].deleted) {
+                if (cells[i].expires_at && *cells[i].expires_at < std::chrono::steady_clock::now()) {
+                    cells[i].deleted = true;
+                    size--;
+                    return nullptr;
+                }
+                return &cells[i].value;
+            }
+            i = (i + 1) % capacity;
+            ops++;
+        }
+        return nullptr;
+    }
 };
