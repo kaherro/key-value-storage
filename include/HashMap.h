@@ -93,7 +93,7 @@ public:
         return false; 
     };
 
-    VAL* find(const KEY& key) {
+    VAL* find(const KEY &key) {
         size_t i = hash(key, capacity);
         size_t ops = 0;
         while (ops < capacity) {
