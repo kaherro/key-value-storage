@@ -1,6 +1,6 @@
 #include "KVEngine.h"
 
-KVEngine::KVEngine(size_t max_size, const std::string &path = "kv.wal") 
+KVEngine::KVEngine(size_t max_size, const std::string &path) 
     : cache(max_size), wal(path, cache) {
     wal.replay(); 
 }

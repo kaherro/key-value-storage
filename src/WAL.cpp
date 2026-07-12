@@ -1,9 +1,13 @@
 #include "WAL.h"
 #include <sstream>
+#include <iostream>
 
 WAL::WAL(const std::string &path, LRUCache<std::string, std::string> &cache) 
     : path(path), cache(cache) {
     log.open(path, std::ios::app);
+    if (!log.is_open()) {
+        std::cerr << "Failed to open WAL: " << path << "\n";
+    }
 }
 
 void WAL::log_set(const std::string &key, const std::string &value, int ttl) {
