@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <iostream>
+#include <thread>
 
 Server::Server(int port, KVEngine &engine) : port(port), engine(engine) {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -26,12 +27,13 @@ void Server::run() {
     while (true) {
         int client_fd = accept(server_fd, nullptr, nullptr);
         if (client_fd < 0) continue;
-        char buf[1024] = {};
-        read(client_fd, buf, sizeof(buf));
-
-        std::string response = handle_operation(buf);
-        write(client_fd, response.c_str(), response.size());
-        close(client_fd);
+        std::thread([this, client_fd]() {
+            char buf[1024] = {};
+            read(client_fd, buf, sizeof(buf));
+            std::string response = handle_operation(buf);
+            write(client_fd, response.c_str(), response.size());
+            close(client_fd);
+        }).detach();
     }
 }
 
