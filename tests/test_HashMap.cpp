@@ -4,6 +4,7 @@
 #include <thread>
 
 void test_basic() {
+    std::cout << "Running basic tests...\n"; 
     HashMap<std::string, int> map;
     map.set("foo", 1);
     assert(map.get("foo") == 1);
@@ -12,6 +13,7 @@ void test_basic() {
 }
 
 void test_overwrite() {
+    std::cout << "Running overwrite tests...\n"; 
     HashMap<std::string, int> map;
     map.set("foo", 1);
     map.set("foo", 2);  
@@ -20,6 +22,7 @@ void test_overwrite() {
 }
 
 void test_del() {
+    std::cout << "Running del tests...\n"; 
     HashMap<std::string, int> map;
     map.set("foo", 1);
     map.del("foo");
@@ -29,6 +32,7 @@ void test_del() {
 }
 
 void test_tombstone() {
+    std::cout << "Running tombstone tests...\n"; 
     HashMap<std::string, int> map;
     map.set("foo", 1);
     map.del("foo");
@@ -38,6 +42,7 @@ void test_tombstone() {
 }
 
 void test_rehash() {
+    std::cout << "Running rehash tests...\n"; 
     HashMap<std::string, int> map(4); 
     for (int i = 0; i < 20; i++)
         map.set("key" + std::to_string(i), i);
@@ -47,6 +52,7 @@ void test_rehash() {
 }
 
 void test_types() {
+    std::cout << "Running types tests...\n"; 
     HashMap<int, std::string> map;
     map.set(1, "one");
     map.set(2, "two");
@@ -56,6 +62,7 @@ void test_types() {
 }
 
 void test_ttl() {
+    std::cout << "Running ttl tests...\n"; 
     HashMap<std::string, int> map;
     map.set("foo", 1, 1);
     assert(map.get("foo") == 1);
@@ -67,6 +74,10 @@ void test_ttl() {
 }
 
 int main() {
+    std::cout << "==========================\n";
+    std::cout << " STARTING HASHMAP TESTS...\n"; 
+    std::cout << "==========================\n";
+    
     test_basic();
     test_overwrite();
     test_del();
@@ -74,5 +85,8 @@ int main() {
     test_rehash();
     test_types();
     test_ttl(); 
-    std::cout << "All tests passed!\n";
+
+    std::cout << "==========================\n";
+    std::cout << "   HASHMAP TESTS PASSED! \n"; 
+    std::cout << "==========================\n";
 }
